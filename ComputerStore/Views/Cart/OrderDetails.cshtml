@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    var order = ViewBag.OrderInfo as ComputerStore.Models.Order;
+    var details = ViewBag.OrderDetails as IEnumerable<dynamic>;
+}
+
+<div class="container mt-4">
+    <a asp-action="History" class="btn btn-secondary mb-3">⬅ Quay lại danh sách</a>
+    <a asp-action="PrintInvoice" asp-route-id="@order?.OrderId" target="_blank" class="btn btn-success mb-3 ms-2 float-end">
+        🖨 In Hóa Đơn
+    </a>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Chi Tiết Đơn Hàng #@order?.OrderId</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Ngày đặt:</strong> @order?.OrderDate?.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><strong>Trạng thái:</strong> <span class="text-success fw-bold">@order?.Status</span></p>
+            <h4 class="text-danger">Tổng thanh toán: @order?.TotalAmount.ToString("N0") VNĐ</h4>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Sản phẩm đã mua:</h4>
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Ảnh</th>
+                <th>Tên Sản Phẩm</th>
+                <th class="text-center">Số Lượng</th>
+                <th class="text-end">Đơn Giá</th>
+                <th class="text-end">Thành Tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in details)
+            {
+                <tr>
+                    <td style="width: 80px;">
+                        <img src="@item.ImageUrl" alt="img" style="width: 50px; height: 50px; object-fit: cover;" onerror="this.src='/images/no-image.png'" />
+                    </td>
+                    <td class="align-middle"><strong>@item.ProductName</strong></td>
+                    <td class="align-middle text-center">@item.Quantity</td>
+                    <td class="align-middle text-end">@item.UnitPrice.ToString("N0") VNĐ</td>
+                    <td class="align-middle text-end text-danger fw-bold">@item.Total.ToString("N0") VNĐ</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

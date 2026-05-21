@@ -1,0 +1,69 @@
+﻿@model List<ComputerStore.Models.Product>
+
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<!-- Hiển thị thông báo lỗi (Nếu thêm quá số lượng tồn kho) -->
+@if (TempData["ErrorMsg"] != null)
+{
+    <div class="alert alert-danger text-center shadow-sm fw-bold mt-3">
+        ⚠ @TempData["ErrorMsg"]
+    </div>
+}
+
+<div class="alert alert-info text-center mt-3 shadow-sm">
+    <h5 class="mb-1">🛠 <strong>Hướng dẫn Test chức năng Tra cứu bảo hành</strong></h5>
+    <p class="mb-0">Dùng Serial: <strong class="text-danger">SN-DELL-12345</strong> hoặc <strong class="text-danger">SN-MAC-99999</strong> để tra cứu.</p>
+</div>
+
+<div class="text-center mt-4 mb-5">
+    <h1 class="display-5 fw-bold text-primary">Sản Phẩm Nổi Bật</h1>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+    @foreach (var item in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 position-relative">
+
+                <!-- LABEL HIỂN THỊ TỒN KHO -->
+                <div class="position-absolute top-0 end-0 m-2">
+                    @if (item.StockQuantity > 0)
+                    {
+                        <span class="badge bg-success">Còn @item.StockQuantity sản phẩm</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Hết hàng</span>
+                    }
+                </div>
+
+                <img src="@item.ImageUrl" class="card-img-top" alt="@item.ProductName" style="height: 250px; object-fit: cover;" onerror="this.src='/images/no-image.png'">
+
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold text-dark">@item.ProductName</h5>
+                    <p class="card-text text-muted small" style="min-height: 40px;">@item.Description</p>
+                    <h4 class="text-danger fw-bold">@item.Price.ToString("N0") VNĐ</h4>
+                </div>
+
+                <div class="card-footer bg-white border-0 pb-3 text-center">
+                    <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                        <input type="hidden" name="productId" value="@item.ProductId" />
+                        <input type="hidden" name="quantity" value="1" />
+
+                        <!-- LOGIC NÚT BẤM DỰA VÀO TỒN KHO -->
+                        @if (item.StockQuantity > 0)
+                        {
+                            <button type="submit" class="btn btn-outline-success w-100 fw-bold">🛒 Thêm Vào Giỏ Hàng</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-secondary w-100 fw-bold" disabled>🚫 Đã Hết Hàng</button>
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

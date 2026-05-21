@@ -1,0 +1,124 @@
+﻿@model List<ComputerStore.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-success fw-bold mb-0">🛒 Giỏ hàng của bạn</h2>
+        @if (Model != null && Model.Any())
+        {
+            <a asp-controller="Cart" asp-action="ClearCart" class="btn btn-outline-danger" onclick="return confirm('Xóa TOÀN BỘ giỏ hàng?');">Xóa tất cả</a>
+        }
+    </div>
+
+    <!-- Hiển thị thông báo lỗi nếu bấm Thanh toán mà không tích món nào -->
+    @if (TempData["ErrorMsg"] != null)
+    {
+        <div class="alert alert-danger shadow-sm fw-bold">⚠ @TempData["ErrorMsg"]</div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-warning shadow-sm">Giỏ hàng đang trống. Hãy quay lại trang chủ chọn sản phẩm nhé!</div>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-2">⬅ Tiếp tục mua sắm</a>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm mb-4">
+            <table class="table table-bordered table-hover mb-0 bg-white">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center">Mua</th> <!-- CỘT CHECKBOX -->
+                        <th class="text-center">Ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th class="text-center">Đơn giá</th>
+                        <th class="text-center">Số lượng</th>
+                        <th class="text-end">Thành tiền</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <!-- Nếu không được chọn thì làm mờ hàng đó đi cho giống Shopee -->
+                        <tr style="@(item.IsSelected ? "" : "opacity: 0.5; background-color: #f8f9fa;")">
+
+                            <!-- Ô TÍCH CHỌN -->
+                            <td class="align-middle text-center">
+                                <input type="checkbox" style="width: 20px; height: 20px; cursor: pointer;"
+                                       checked="@item.IsSelected"
+                                       onchange="window.location.href='/Cart/ToggleSelect?productId=@item.ProductId'" />
+                            </td>
+
+                            <td class="align-middle text-center" style="width: 80px;">
+                                <img src="@item.ImageUrl" alt="img" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" onerror="this.src='/images/no-image.png'" />
+                            </td>
+                            <td class="align-middle"><strong>@item.ProductName</strong></td>
+                            <td class="align-middle text-center">@item.Price.ToString("N0") đ</td>
+                            <td class="align-middle text-center">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <a asp-controller="Cart" asp-action="UpdateQuantity" asp-route-productId="@item.ProductId" asp-route-quantity="@(item.Quantity - 1)" class="btn btn-sm btn-secondary" onclick="if(@item.Quantity == 1) return confirm('Xóa sản phẩm này?');"><b>-</b></a>
+                                    <span class="mx-3 fw-bold fs-5">@item.Quantity</span>
+                                    <a asp-controller="Cart" asp-action="UpdateQuantity" asp-route-productId="@item.ProductId" asp-route-quantity="@(item.Quantity + 1)" class="btn btn-sm btn-secondary"><b>+</b></a>
+                                </div>
+                            </td>
+                            <td class="align-middle text-end text-danger fw-bold">@item.Total.ToString("N0") đ</td>
+                            <td class="align-middle text-center">
+                                <a asp-controller="Cart" asp-action="RemoveItem" asp-route-productId="@item.ProductId" class="btn btn-sm btn-danger" onclick="return confirm('Xóa sản phẩm này?');">Xóa</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">Mã khuyến mãi</h5>
+                        <form asp-controller="Cart" asp-action="Index" method="get" class="d-flex mt-3">
+                            <input type="text" name="promoCode" value="@ViewBag.PromoCode" class="form-control me-2" placeholder="Nhập mã..." />
+                            <button type="submit" class="btn btn-secondary text-nowrap">Áp dụng</button>
+                        </form>
+                        @if (ViewBag.PromoMessage != null)
+                        {
+                            <div class="text-success mt-2 fw-bold">✔ @ViewBag.PromoMessage</div>
+                        }
+                        @if (ViewBag.PromoError != null)
+                        {
+                            <div class="text-danger mt-2 fw-bold">✖ @ViewBag.PromoError</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 bg-light">
+                    <div class="card-body text-end">
+                        <p class="mb-1">Tạm tính: <strong>@ViewBag.SubTotal?.ToString("N0") VNĐ</strong></p>
+                        <p class="mb-2">Giảm giá: <strong class="text-success">- @ViewBag.Discount?.ToString("N0") VNĐ</strong></p>
+                        <hr />
+                        <h4 class="mt-2 mb-4">Tổng thanh toán: <span class="text-danger fw-bold">@ViewBag.TotalAmount?.ToString("N0") VNĐ</span></h4>
+
+                        <!-- Nút thanh toán -->
+                        @if (ViewBag.TotalAmount > 0)
+                        {
+                            <form asp-controller="Cart" asp-action="Checkout" method="post">
+                                <input type="hidden" name="totalAmount" value="@ViewBag.TotalAmount" />
+                                <input type="hidden" name="promotionId" value="@ViewBag.PromotionId" />
+                                <button type="submit" class="btn btn-success btn-lg w-100 fw-bold shadow">💳 Đặt Hàng & Thanh Toán Ngay</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button class="btn btn-secondary btn-lg w-100 fw-bold shadow" disabled>Vui lòng chọn sản phẩm</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,72 @@
+﻿@model IEnumerable<ComputerStore.Models.Warrantyticket>
+
+@{
+    ViewData["Title"] = "Tra cứu bảo hành";
+}
+
+<div class="container mt-4">
+    <h2 class="text-center text-primary mb-4">Tra Cứu Trạng Thái Bảo Hành</h2>
+
+    <!-- Form tìm kiếm -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-6">
+            <form method="get" asp-action="Lookup" class="d-flex">
+                <input type="text" name="serialNumber" class="form-control me-2" placeholder="Nhập Serial Number của máy..." value="@Context.Request.Query["serialNumber"]" required />
+                <button type="submit" class="btn btn-primary">Tra Cứu</button>
+            </form>
+            @if (ViewBag.Message != null)
+            {
+                <div class="alert alert-warning mt-3 text-center">@ViewBag.Message</div>
+            }
+        </div>
+    </div>
+
+    <!-- Kết quả -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover shadow-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Mã Phiếu</th>
+                        <th>Serial Number</th>
+                        <th>Mô tả lỗi</th>
+                        <th>Ngày tiếp nhận</th>
+                        <th>Ngày trả (Dự kiến/Thực tế)</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>#@item.TicketId</td>
+                            <td><strong>@item.SerialNumber</strong></td>
+                            <td>@item.IssueDescription</td>
+                            <td>@item.ReceivedDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@(item.ReturnDate.HasValue? item.ReturnDate.Value.ToString("dd/MM/yyyy") : "Chưa xác định")</td>
+                            <td>
+                                @if (item.Status == "Received")
+                                {
+                                    <span class="badge bg-secondary">Đã tiếp nhận</span>
+                                }
+                                else if (item.Status == "Repairing")
+                                {
+                                    <span class="badge bg-warning text-dark">Đang sửa chữa</span>
+                                }
+                                else if (item.Status == "Done")
+                                {
+                                    <span class="badge bg-success">Đã hoàn thành</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info">@item.Status</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

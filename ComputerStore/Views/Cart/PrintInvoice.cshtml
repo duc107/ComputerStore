@@ -1,0 +1,121 @@
+﻿@{
+    Layout = null; // Bỏ qua Layout chung, tự tạo trang riêng để in
+    var order = ViewBag.OrderInfo as ComputerStore.Models.Order;
+    var details = ViewBag.OrderDetails as IEnumerable<dynamic>;
+    var customerName = ViewBag.CustomerName;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>Hóa Đơn #@order?.OrderId - ComputerStore</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .invoice-box {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 30px;
+            border: 1px solid #eee;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+            font-size: 16px;
+            line-height: 24px;
+            color: #555;
+            background-color: #fff;
+        }
+
+        .invoice-header h2 {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .table th {
+            background-color: #f2f2f2 !important;
+            -webkit-print-color-adjust: exact;
+        }
+        /* Tự động bật hộp thoại IN khi trang web load lên */
+        @@media print {
+            .no-print {
+                display: none !important;
+            }
+
+            .invoice-box {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background-color: #fff;
+            }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <!-- Tự động in khi mở -->
+    <div class="text-center mt-3 no-print">
+        <button class="btn btn-primary" onclick="window.print()">🖨 Bấm vào đây để In lại</button>
+        <button class="btn btn-secondary" onclick="window.close()">Đóng cửa sổ</button>
+    </div>
+
+    <div class="invoice-box">
+        <div class="row invoice-header border-bottom pb-3 mb-4">
+            <div class="col-sm-6">
+                <h2>💻 ComputerStore</h2>
+                <p class="mb-0">123 Đường C#, Hà Nội, Việt Nam<br />SĐT: 0123.456.789<br />Email: hotro@computerstore.vn</p>
+            </div>
+            <div class="col-sm-6 text-end">
+                <h3 class="text-danger">HÓA ĐƠN BÁN LẺ</h3>
+                <p class="mb-0">
+                    <strong>Số HĐ:</strong> #@order?.OrderId<br />
+                    <strong>Ngày in:</strong> @DateTime.Now.ToString("dd/MM/yyyy HH:mm")<br />
+                    <strong>Khách hàng:</strong> @customerName
+                </p>
+            </div>
+        </div>
+
+        <table class="table table-bordered mb-4">
+            <thead>
+                <tr>
+                    <th class="text-center" style="width: 50px;">STT</th>
+                    <th>Tên Sản Phẩm</th>
+                    <th class="text-center" style="width: 100px;">S.Lượng</th>
+                    <th class="text-end">Đơn Giá</th>
+                    <th class="text-end">Thành Tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int stt = 1;
+                }
+                @foreach (var item in details)
+                {
+                    <tr>
+                        <td class="text-center">@(stt++)</td>
+                        <td>@item.ProductName</td>
+                        <td class="text-center">@item.Quantity</td>
+                        <td class="text-end">@item.UnitPrice.ToString("N0") đ</td>
+                        <td class="text-end fw-bold">@item.Total.ToString("N0") đ</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="row border-top pt-3">
+            <div class="col-sm-7">
+                <p><strong>Cảm ơn quý khách đã mua hàng!</strong></p>
+                <p><em>Sản phẩm được bảo hành điện tử qua Serial Number.</em></p>
+            </div>
+            <div class="col-sm-5 text-end">
+                <h4 class="text-danger">TỔNG CỘNG: @order?.TotalAmount.ToString("N0") VNĐ</h4>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
